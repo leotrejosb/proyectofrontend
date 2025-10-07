@@ -9,8 +9,8 @@ import { Footer } from '../components/layout/footer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'XXXXXX - Comunidad Deportiva de Resistencia',
-  description: 'Plataforma digital para afiliados y eventos deportivos de resistencia.',
+  title: 'Comunidad Deportiva',
+  description: 'Plataforma digital para afiliados y eventos deportivos.',
 };
 
 export default function RootLayout({
@@ -21,8 +21,8 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
-
-        <div className="relative flex min-h-screen flex-col">
+        <div id="mobile-menu-portal"></div> {/* <-- AÑADE ESTA LÍNEA AQUÍ */}
+        <div className="flex min-h-screen flex-col">
           <Header />
           <main className="flex-1">{children}</main>
           <Footer/>
