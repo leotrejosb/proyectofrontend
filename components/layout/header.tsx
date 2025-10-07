@@ -83,7 +83,7 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 w-full border-b bg-background/95">
+      <header className="sticky top-0 z-30 w-full border-b bg-background/85">
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8">
           {/* ... Contenido del nav se queda igual ... */}
           <div className="flex lg:flex-1">
