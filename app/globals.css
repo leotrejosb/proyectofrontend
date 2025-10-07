@@ -36,7 +36,6 @@
     --foreground: 240 5% 89%;
   }
 }
-
 /* 🧠 Definición del tema inline para Tailwind */
 @theme inline {
   /* Colores principales (HSL → Tailwind variables) */
@@ -78,4 +77,9 @@ p {
 /* Utilidad personalizada */
 .text-balance {
   text-wrap: balance;
+}
+
+/* Oculta el logo inyectado por Vercel */
+[data-testid="vercel-badge"] {
+  display: none !important;
 }
