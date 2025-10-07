@@ -4,7 +4,6 @@ import { Inter } from 'next/font/google';
 import { Header } from '../components/layout/header';
 
 
-import { HideNextBadge } from '../components/HideNextBadge'; // 👈 importamos el cliente
 import { Footer } from '../components/layout/footer';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -22,8 +21,6 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
-        {/* 👇 Este componente cliente elimina el logo */}
-        <HideNextBadge />  
 
         <div className="relative flex min-h-screen flex-col">
           <Header />
