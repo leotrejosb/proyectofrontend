@@ -30,12 +30,12 @@
 }
 
 /* 🌗 Modo oscuro */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: 240 10% 9%;
     --foreground: 240 5% 89%;
   }
-}
+} */
 /* 🧠 Definición del tema inline para Tailwind */
 @theme inline {
   /* Colores principales (HSL → Tailwind variables) */
