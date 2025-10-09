@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* 🎨 Variables globales de color */
+:root {
+  --background: 240 10% 9%;
+  --foreground: 240 5% 89%;
+  --card: 240 8% 15%;
+  --card-foreground: 240 5% 89%;
+  --popover: 240 8% 15%;
+  --popover-foreground: 240 5% 89%;
+  --primary: 20 91% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 188 81% 29%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 240 6% 20%;
+  --muted-foreground: 240 4% 60%;
+  --accent: 20 91% 48%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 6% 25%;
+  --input: 240 6% 25%;
+  --ring: 20 91% 48%;
+  --radius: 0.5rem;
+  --chart-1: 20 91% 48%;
+  --chart-2: 188 81% 29%;
+  --chart-3: 240 6% 20%;
+  --chart-4: 240 5% 89%;
+  --chart-5: 240 8% 15%;
+}
+
+/* 🌗 Modo oscuro */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 240 10% 9%;
+    --foreground: 240 5% 89%;
+  }
+}
+/* 🧠 Definición del tema inline para Tailwind */
+@theme inline {
+  /* Colores principales (HSL → Tailwind variables) */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-secondary: hsl(var(--secondary));
+  --color-accent: hsl(var(--accent));
+  --color-border: hsl(var(--border));
+  --color-muted: hsl(var(--muted));
+  --color-ring: hsl(var(--ring));
+
+  /* Tipografía y bordes */
+  --radius: var(--radius);
+}
+
+/* ✍️ Estilos base globales */
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 🧩 Estilos adicionales opcionales */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+p {
+  line-height: 1.5;
+}
+
+/* Utilidad personalizada */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Oculta el logo inyectado por Vercel */
+[data-testid="vercel-badge"] {
+  display: none !important;
+}
