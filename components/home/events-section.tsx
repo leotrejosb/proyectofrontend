@@ -52,7 +52,6 @@ const difficultyColors: Record<Difficulty, string> = {
 export async function EventsSection() {
   const events = await fetchCompetitions();
   const limited = (events ?? []).slice(0, 3); // nunca más de 3 renderizadas
-
   return (
     <section className="border-b border-border bg-muted/30 py-16 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
