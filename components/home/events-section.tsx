@@ -3,6 +3,7 @@ import { ArrowRight, Calendar, MapPin, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
+import Image from 'next/image'; // <-- Añadido
 
 type Difficulty = 'Principiante' | 'Intermedio' | 'Avanzado' | 'Extremo';
 
@@ -18,7 +19,20 @@ interface Event {
   slug: string;
 }
 
-function mapCompetitionToEvent(item: any): Event {
+// Interfaz para el tipo de dato que recibes de la API
+interface ApiCompetition {
+  id: string | number;
+  name: string;
+  start_date: string;
+  location?: string;
+  participants_count?: number;
+  max_participants?: number;
+  difficulty?: Difficulty;
+  image_url?: string;
+  slug: string;
+}
+
+function mapCompetitionToEvent(item: ApiCompetition): Event {
   return {
     id: item.id,
     title: item.name,
@@ -71,16 +85,12 @@ export async function EventsSection() {
             </Link>
           </Button>
         </div>
-
         <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {limited.map((event, idx) => {
             const safeMax = Math.max(event.maxParticipants || 0, 1);
             const spotsLeft = Math.max(safeMax - (event.participants || 0), 0);
             const percentageFull = Math.min(((event.participants || 0) / safeMax) * 100, 100);
-
-            // La tercera card (idx === 2) se oculta en mobile y md, aparece en lg+
             const visibility = idx === 2 ? 'hidden lg:block' : '';
-
             return (
               <Card
                 key={event.id}
@@ -88,10 +98,11 @@ export async function EventsSection() {
               >
                 <CardHeader className="p-0">
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <img
+                    <Image // <-- Cambiado de img a Image
                       src={event.image}
                       alt={event.title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
                     <Badge
@@ -102,12 +113,10 @@ export async function EventsSection() {
                     </Badge>
                   </div>
                 </CardHeader>
-
                 <CardContent className="p-6">
                   <CardTitle className="mb-3 text-xl group-hover:text-primary transition-colors">
                     <Link href={`/competencias/${event.slug}`}>{event.title}</Link>
                   </CardTitle>
-
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-primary" />
@@ -130,7 +139,6 @@ export async function EventsSection() {
                       </span>
                     </div>
                   </div>
-
                   <div className="mt-4">
                     <div className="mb-1 flex justify-between text-xs text-muted-foreground">
                       <span>Cupos disponibles</span>
@@ -144,7 +152,6 @@ export async function EventsSection() {
                     </div>
                   </div>
                 </CardContent>
-
                 <CardFooter className="p-6 pt-0">
                   <Button asChild className="w-full group/btn">
                     <Link href={`/competencias/${event.slug}`}>
@@ -157,13 +164,11 @@ export async function EventsSection() {
             );
           })}
         </div>
-
         {!events.length && (
           <p className="mt-8 text-center text-sm text-muted-foreground">
             Aún no hay competencias publicadas.
           </p>
         )}
-
         <div className="mt-8 text-center sm:hidden">
           <Button asChild variant="ghost">
             <Link href="/competencias">
