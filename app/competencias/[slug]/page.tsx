@@ -383,7 +383,7 @@ export default async function CompetenciaDetalladaPage({ params }: CompetenciaPa
         <Separator className="my-12" />
 
         {/* Bottom Navigation */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col-reverse gap-5 sm:flex-row sm:items-center sm:justify-between">
           <Button asChild variant="outline">
             <Link href="/competencias">
               <ArrowLeft className="mr-2 h-4 w-4" />
