@@ -59,10 +59,10 @@ function mapApiToCompetition(item: ApiCompetition): Competition {
 const difficulties = ['Todas', 'Principiante', 'Intermedio', 'Avanzado', 'Extremo'];
 
 const difficultyColors: { [key: string]: string } = {
-  Principiante: 'border-green-500/50 bg-green-500/10 text-green-600',
-  Intermedio: 'border-yellow-500/50 bg-yellow-500/10 text-yellow-600',
-  Avanzado: 'border-orange-500/50 bg-orange-500/10 text-orange-600',
-  Extremo: 'border-red-500/50 bg-red-500/10 text-red-600',
+  Principiante: 'bg-green-100 text-green-700',
+  Intermedio: 'bg-yellow-100 text-yellow-700',
+  Avanzado: 'bg-orange-600 text-orange-100',
+  Extremo: 'bg-red-600 text-red-100',
 };
 
 
