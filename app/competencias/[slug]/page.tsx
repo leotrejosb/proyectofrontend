@@ -48,10 +48,11 @@ interface Competition {
 
 // ✅ INICIO DE LA CORRECCIÓN: Se define la interfaz para las props de la página
 interface CompetenciaPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
+
 // ✅ FIN DE LA CORRECCIÓN
 
 const difficultyColors: { [key: string]: string } = {
