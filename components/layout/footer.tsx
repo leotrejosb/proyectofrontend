@@ -53,12 +53,12 @@ export function Footer() {
 
         {/* === BLOQUE 2: Columnas de Enlaces (Izquierda y Derecha) === */}
         <div className="mt-8 border-t border-border pt-8">
-          <div className="flex flex-col gap-8 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8  text-center">
             
             {/* Columna Izquierda: Plataforma */}
             <div>
               <h3 className="text-sm font-semibold text-foreground">Plataforma</h3>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 ">
                 {footerLinks.platform.map((item) => (
                   <li key={item.name}>
                     <Link
@@ -75,7 +75,7 @@ export function Footer() {
             {/* Columna Derecha: Más Información */}
             <div>
               <h3 className="text-sm font-semibold text-foreground">Más Información</h3>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4">
                 {footerLinks.legal.map((item) => (
                   <li key={item.name}>
                     <Link
