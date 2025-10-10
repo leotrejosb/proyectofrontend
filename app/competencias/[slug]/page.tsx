@@ -103,10 +103,11 @@ async function getCompetition(slug: string): Promise<Competition | null> {
     }
 
     const data = await res.json();
-    const results = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+    const results = Array.isArray(data?.results) ? data.results : [];
     
-    // ✅ Filtrar por slug en el cliente
-    const competition = results.find((comp: any) => comp.slug === slug);
+    // ✅ SIN 'any' - TypeScript infiere el tipo
+    const competition = results.find((comp: Competition) => comp.slug === slug);
+
     
     if (!competition) {
       return null;
@@ -148,7 +149,7 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
 // ✅ INICIO DE LA CORRECCIÓN: Se utiliza la nueva interfaz en la firma del componente
 export default async function CompetenciaDetalladaPage({ params }: CompetenciaPageProps) {
 // ✅ FIN DE LA CORRECCIÓN
-  const { slug } = params;
+  const { slug } = await params;
   const competition = await getCompetition(slug);
 
   if (!competition) {
