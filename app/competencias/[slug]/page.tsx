@@ -87,7 +87,7 @@ async function getCompetition(slug: string): Promise<Competition | null> {
 
   try {
     const res = await fetch(`${apiUrl}/competitions/?slug=${slug}`, {
-      cache: 'no-store' // Para obtener datos frescos en cada request
+      cache: 'no-store'
     });
 
     if (!res.ok) {
@@ -133,8 +133,8 @@ export async function generateStaticParams() {
 }
 
 // --- Component ---
-export default async function CompetenciaDetalladaPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function CompetenciaDetalladaPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const competition = await getCompetition(slug);
 
   if (!competition) {
