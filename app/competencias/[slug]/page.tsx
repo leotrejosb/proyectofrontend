@@ -46,6 +46,14 @@ interface Competition {
   requirements: string[];
 }
 
+// ✅ INICIO DE LA CORRECCIÓN: Se define la interfaz para las props de la página
+interface CompetenciaPageProps {
+  params: {
+    slug: string;
+  };
+}
+// ✅ FIN DE LA CORRECCIÓN
+
 const difficultyColors: { [key: string]: string } = {
   Principiante: 'border-green-500/50 bg-green-500/10 text-green-600',
   Intermedio: 'border-yellow-500/50 bg-yellow-500/10 text-yellow-600',
@@ -97,11 +105,14 @@ async function getCompetition(slug: string): Promise<Competition | null> {
     const data = await res.json();
     const results = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
     
-    if (results.length === 0) {
+    // ✅ Filtrar por slug en el cliente
+    const competition = results.find((comp: any) => comp.slug === slug);
+    
+    if (!competition) {
       return null;
     }
 
-    return mapApiToCompetition(results[0]);
+    return mapApiToCompetition(competition);
   } catch (error) {
     console.error('Error fetching competition:', error);
     return null;
@@ -109,7 +120,7 @@ async function getCompetition(slug: string): Promise<Competition | null> {
 }
 
 // --- Generate Static Params ---
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   
   if (!apiUrl) {
@@ -132,8 +143,11 @@ export async function generateStaticParams() {
   }
 }
 
+
 // --- Component ---
-export default async function CompetenciaDetalladaPage({ params }: { params: { slug: string } }) {
+// ✅ INICIO DE LA CORRECCIÓN: Se utiliza la nueva interfaz en la firma del componente
+export default async function CompetenciaDetalladaPage({ params }: CompetenciaPageProps) {
+// ✅ FIN DE LA CORRECCIÓN
   const { slug } = params;
   const competition = await getCompetition(slug);
 
