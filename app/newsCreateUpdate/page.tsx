@@ -31,9 +31,19 @@ export default function AgregarCompetenciaForm() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (field: keyof EventForm, value: any) => {
+  // ---------- CORRECCIÓN: Se eliminó "any" y se separaron funciones según tipo ----------
+  const handleInputChange = (field: 'title' | 'date' | 'location' | 'difficulty', value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const handleNumberChange = (field: 'maxParticipants', value: number) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileChange = (field: 'image', value: File | null) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+  // -------------------------------------------------------------------------
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +95,7 @@ export default function AgregarCompetenciaForm() {
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
+              onChange={(e) => handleInputChange('title', e.target.value)} // CORRECCIÓN: uso de handleInputChange
               required
             />
           </div>
@@ -97,7 +107,7 @@ export default function AgregarCompetenciaForm() {
                 id="date"
                 type="date"
                 value={formData.date}
-                onChange={(e) => handleInputChange('date', e.target.value)}
+                onChange={(e) => handleInputChange('date', e.target.value)} // CORRECCIÓN: uso de handleInputChange
                 required
               />
             </div>
@@ -107,7 +117,7 @@ export default function AgregarCompetenciaForm() {
               <Input
                 id="location"
                 value={formData.location}
-                onChange={(e) => handleInputChange('location', e.target.value)}
+                onChange={(e) => handleInputChange('location', e.target.value)} // CORRECCIÓN: uso de handleInputChange
                 required
               />
             </div>
@@ -120,7 +130,7 @@ export default function AgregarCompetenciaForm() {
                 id="maxParticipants"
                 type="number"
                 value={formData.maxParticipants}
-                onChange={(e) => handleInputChange('maxParticipants', parseInt(e.target.value, 10))}
+                onChange={(e) => handleNumberChange('maxParticipants', parseInt(e.target.value, 10))} // CORRECCIÓN: uso de handleNumberChange
                 required
               />
             </div>
@@ -129,7 +139,7 @@ export default function AgregarCompetenciaForm() {
               <Label htmlFor="difficulty">Dificultad</Label>
               <Select
                 value={formData.difficulty}
-                onValueChange={(value) => handleInputChange('difficulty', value)}
+                onValueChange={(value) => handleInputChange('difficulty', value)} // CORRECCIÓN: uso de handleInputChange
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona una dificultad" />
@@ -149,7 +159,7 @@ export default function AgregarCompetenciaForm() {
             <Input
               id="image"
               type="file"
-              onChange={(e) => handleInputChange('image', e.target.files?.[0] || null)}
+              onChange={(e) => handleFileChange('image', e.target.files?.[0] || null)} // CORRECCIÓN: uso de handleFileChange
             />
           </div>
 
