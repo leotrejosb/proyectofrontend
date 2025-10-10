@@ -18,6 +18,13 @@ interface NewsArticle {
   author: string;
 }
 
+// ✅ INTERFAZ AGREGADA PARA NEXT.JS 15
+interface NoticiaPageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
+
 export function generateStaticParams() {
   return [
     { slug: 'gran-triatlon-nacional-2025' },
@@ -80,8 +87,10 @@ Felicitamos a todos los competidores por su esfuerzo y dedicación. Estos result
   },
 ];
 
-export default function NoticiaDetalladaPage({ params }: { params: { slug: string } }) {
-  const article = articles.find((a) => a.slug === params.slug);
+// ✅ COMPONENTE CORREGIDO CON ASYNC Y AWAIT
+export default async function NoticiaDetalladaPage({ params }: NoticiaPageProps) {
+  const { slug } = await params; // ✅ Await params para Next.js 15
+  const article = articles.find((a) => a.slug === slug);
 
   if (!article) {
     notFound();
