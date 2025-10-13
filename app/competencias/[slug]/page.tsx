@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, MapPin, ArrowLeft, Share2, Users, Clock, Trophy, Info } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
@@ -46,14 +47,12 @@ interface Competition {
   requirements: string[];
 }
 
-// ✅ INICIO DE LA CORRECCIÓN: Se define la interfaz para las props de la página
+// ✅ Tipado correcto para App Router (sin Promise)
 interface CompetenciaPageProps {
   params: Promise<{
     slug: string;
   }>;
 }
-
-// ✅ FIN DE LA CORRECCIÓN
 
 const difficultyColors: { [key: string]: string } = {
   Principiante: 'border-green-500/50 bg-green-500/10 text-green-600',
@@ -72,7 +71,9 @@ function mapApiToCompetition(item: ApiCompetition): Competition {
     fullDescription: item.description || 'Información completa próximamente.',
     date: item.start_date,
     location: item.location || 'Ubicación por definir',
-    image: item.image_url || `https://images.pexels.com/photos/863988/pexels-photo-863988.jpeg?auto=compress&cs=tinysrgb&w=1200`,
+    image:
+      item.image_url ||
+      `https://images.pexels.com/photos/863988/pexels-photo-863988.jpeg?auto=compress&cs=tinysrgb&w=1200`,
     difficulty: item.difficulty || 'Intermedio',
     participants: item.participants_count || 0,
     maxParticipants: item.max_participants || 100,
@@ -88,7 +89,7 @@ function mapApiToCompetition(item: ApiCompetition): Competition {
 // --- Fetch Competition ---
 async function getCompetition(slug: string): Promise<Competition | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  
+
   if (!apiUrl) {
     console.error('API URL not configured');
     return null;
@@ -96,7 +97,7 @@ async function getCompetition(slug: string): Promise<Competition | null> {
 
   try {
     const res = await fetch(`${apiUrl}/competitions/?slug=${slug}`, {
-      cache: 'no-store'
+      cache: 'no-store',
     });
 
     if (!res.ok) {
@@ -105,16 +106,11 @@ async function getCompetition(slug: string): Promise<Competition | null> {
 
     const data = await res.json();
     const results = Array.isArray(data?.results) ? data.results : [];
-    
-    // ✅ SIN 'any' - TypeScript infiere el tipo
-    const competition = results.find((comp: Competition) => comp.slug === slug);
 
-    
-    if (!competition) {
-      return null;
-    }
+    const found = results.find((comp: ApiCompetition) => comp.slug === slug);
+    if (!found) return null;
 
-    return mapApiToCompetition(competition);
+    return mapApiToCompetition(found);
   } catch (error) {
     console.error('Error fetching competition:', error);
     return null;
@@ -124,7 +120,7 @@ async function getCompetition(slug: string): Promise<Competition | null> {
 // --- Generate Static Params ---
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  
+
   if (!apiUrl) {
     return [];
   }
@@ -132,10 +128,14 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
   try {
     const res = await fetch(`${apiUrl}/competitions/`);
     if (!res.ok) return [];
-    
+
     const data = await res.json();
-    const results: ApiCompetition[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
-    
+    const results: ApiCompetition[] = Array.isArray(data?.results)
+      ? data.results
+      : Array.isArray(data)
+      ? data
+      : [];
+
     return results.map((comp) => ({
       slug: comp.slug,
     }));
@@ -145,11 +145,8 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
   }
 }
 
-
 // --- Component ---
-// ✅ INICIO DE LA CORRECCIÓN: Se utiliza la nueva interfaz en la firma del componente
 export default async function CompetenciaDetalladaPage({ params }: CompetenciaPageProps) {
-// ✅ FIN DE LA CORRECCIÓN
   const { slug } = await params;
   const competition = await getCompetition(slug);
 
@@ -164,10 +161,16 @@ export default async function CompetenciaDetalladaPage({ params }: CompetenciaPa
     <div className="min-h-screen bg-background">
       {/* Hero Image */}
       <div className="relative h-[400px] w-full overflow-hidden border-b border-border">
-        <img
-          src={competition.image} 
+        <Image
+          src={competition.image}
           alt={competition.title}
-          className="h-full w-full object-cover"
+          fill
+          priority
+          sizes="100vw"
+          quality={85}
+          className="object-cover"
+          // placeholder="blur"
+          // blurDataURL="/blur-placeholder.jpg"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
       </div>
@@ -187,11 +190,12 @@ export default async function CompetenciaDetalladaPage({ params }: CompetenciaPa
             <Badge variant="outline" className={`border ${difficultyColors[competition.difficulty]}`}>
               {competition.difficulty}
             </Badge>
-            {isFull && (
-              <Badge variant="destructive">Cupos agotados</Badge>
-            )}
+            {isFull && <Badge variant="destructive">Cupos agotados</Badge>}
             {!isFull && spotsLeft <= 20 && (
-              <Badge variant="outline" className="border-orange-500/50 bg-orange-500/10 text-orange-600">
+              <Badge
+                variant="outline"
+                className="border-orange-500/50 bg-orange-500/10 text-orange-600"
+              >
                 ¡Solo {spotsLeft} cupos disponibles!
               </Badge>
             )}
@@ -201,9 +205,7 @@ export default async function CompetenciaDetalladaPage({ params }: CompetenciaPa
             {competition.title}
           </h1>
 
-          <p className="text-xl text-muted-foreground mb-6">
-            {competition.description}
-          </p>
+          <p className="text-xl text-muted-foreground mb-6">{competition.description}</p>
 
           {/* Quick Info Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -286,7 +288,7 @@ export default async function CompetenciaDetalladaPage({ params }: CompetenciaPa
               <h3 className="text-xl font-bold mb-4">Categorías</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {competition.categories.map((category, index) => (
-                  <div 
+                  <div
                     key={index}
                     className="p-3 rounded-lg border border-border bg-muted/30 text-sm"
                   >
@@ -328,9 +330,7 @@ export default async function CompetenciaDetalladaPage({ params }: CompetenciaPa
             <Card className="sticky top-6">
               <CardContent className="p-6 space-y-6">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Cierre de inscripciones
-                  </div>
+                  <div className="text-sm text-muted-foreground mb-2">Cierre de inscripciones</div>
                   <div className="font-semibold text-foreground">
                     {new Date(competition.registrationDeadline).toLocaleDateString('es-ES', {
                       day: 'numeric',
@@ -348,9 +348,11 @@ export default async function CompetenciaDetalladaPage({ params }: CompetenciaPa
                     </span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div 
-                      className="h-full bg-primary transition-all" 
-                      style={{ width: `${(competition.participants / competition.maxParticipants) * 100}%` }}
+                    <div
+                      className="h-full bg-primary transition-all"
+                      style={{
+                        width: `${(competition.participants / competition.maxParticipants) * 100}%`,
+                      }}
                     />
                   </div>
                 </div>
