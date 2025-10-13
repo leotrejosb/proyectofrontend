@@ -105,7 +105,7 @@ export function Header() {
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
             <Button asChild size="sm">
-              <Link href="/afiliacion">Afiliarme Ahora</Link>
+              <Link href="/newsCreateUpdate">Afiliarme Ahora</Link>
             </Button>
           </div>
         </nav>
