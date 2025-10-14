@@ -86,7 +86,7 @@ export function NewsSection() {
           throw new Error('La URL base de la API no está configurada (NEXT_PUBLIC_API_BASE_URL).');
         }
 
-        const url = `${base}/posts/?ordering=-publish_at`;
+        const url = `${base}/posts/?ordering=-publish_at&is_published=true`;
         const res = await fetch(url, {
           signal: ctrl.signal,
           headers: { accept: 'application/json' },

@@ -90,7 +90,7 @@ export default function NoticiasPage() {
         if (!base) throw new Error('Falta NEXT_PUBLIC_API_BASE_URL');
 
         // Trae la primera página OR el arreglo completo
-        const url = `${base}/posts/?ordering=-publish_at`;
+        const url = `${base}/posts/?ordering=-publish_at&is_published=true`;
         const res = await fetch(url, { signal: ctrl.signal, headers: { accept: 'application/json' } });
         if (!res.ok) throw new Error(`Error ${res.status}`);
 
