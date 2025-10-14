@@ -21,10 +21,28 @@ export default function NewsCreateUpdatePage() {
         </div>
         
         {/* Navegación Dinámica */}
-        <div className="flex gap-2 mb-8 border-b">
-          <Button variant={activeView === 'competencias' ? 'default' : 'ghost'} onClick={() => setActiveView('competencias')} className="flex items-center gap-2"><Trophy className="h-4 w-4" /> Competencias</Button>
-          <Button variant={activeView === 'noticias' ? 'default' : 'ghost'} onClick={() => setActiveView('noticias')} className="flex items-center gap-2"><Newspaper className="h-4 w-4" /> Noticias</Button>
-          <Button variant={activeView === 'participantes' ? 'default' : 'ghost'} onClick={() => setActiveView('participantes')} className="flex items-center gap-2"><UserPlus className="h-4 w-4" /> Participantes</Button>
+        <div className="flex flex-col sm:flex-row gap-1 mb-8 border-b">
+          <Button 
+            variant={activeView === 'competencias' ? 'default' : 'ghost'} 
+            onClick={() => setActiveView('competencias')} 
+            className="flex items-center justify-start gap-1 w-full sm:w-auto" 
+          >
+            <Trophy className="h-4 w-4" /> Competencias
+          </Button>
+          <Button 
+            variant={activeView === 'noticias' ? 'default' : 'ghost'} 
+            onClick={() => setActiveView('noticias')} 
+            className="flex items-center justify-start gap-1 w-full sm:w-auto" 
+          >
+            <Newspaper className="h-4 w-4" /> Noticias
+          </Button>
+          <Button 
+            variant={activeView === 'participantes' ? 'default' : 'ghost'} 
+            onClick={() => setActiveView('participantes')} 
+            className="flex items-center justify-start gap-1 w-full sm:w-auto" 
+          >
+            <UserPlus className="h-4 w-4" /> Participantes
+          </Button>
         </div>
         
         {/* Contenido Dinámico */}

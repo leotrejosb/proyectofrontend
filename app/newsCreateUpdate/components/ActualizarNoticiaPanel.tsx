@@ -61,7 +61,6 @@ export function ActualizarNoticiaPanel() {
       try {
         const res = await fetch(`https://backend.cerebria.co/api/v1/posts/${selectedNewsId}/`);
         const data: NewsDetails = await res.json();
-        // Formatear fecha para el input datetime-local
         data.publish_at = new Date(data.publish_at).toISOString().slice(0, 16);
         setFormData(data);
       } catch (error) {
@@ -98,7 +97,7 @@ export function ActualizarNoticiaPanel() {
     if (imageFile) body.append('image', imageFile);
 
     try {
-      const res = await fetch(`https://backend.cerebria.co/api/v1/posts/${selectedNewsId}/`, { method: 'PATCH', body });
+      const res = await fetch(`https://backend.cerebria.co/api/v1/posts/${selectedNewsId}/`, { method: 'PATCH', body, credentials: 'include' });
       if (res.ok) {
         setAlertState({ isOpen: true, title: 'Éxito', description: 'Noticia actualizada.', isSuccess: true });
         resetForm();
@@ -119,7 +118,7 @@ export function ActualizarNoticiaPanel() {
     if (!selectedNewsId || !confirm('¿Seguro que deseas eliminar esta noticia?')) return;
     setLoading(prev => ({...prev, action: true}));
     try {
-      const res = await fetch(`https://backend.cerebria.co/api/v1/posts/${selectedNewsId}/`, { method: 'DELETE' });
+      const res = await fetch(`https://backend.cerebria.co/api/v1/posts/${selectedNewsId}/`, { method: 'DELETE', credentials: 'include' });
       if (res.ok || res.status === 204) {
         setAlertState({ isOpen: true, title: 'Éxito', description: 'Noticia eliminada.', isSuccess: true });
         resetForm();
@@ -146,9 +145,17 @@ export function ActualizarNoticiaPanel() {
         <CardContent className="space-y-4">
           <Label>Seleccionar Noticia</Label>
           <Select onValueChange={setSelectedNewsId} value={selectedNewsId || ''} disabled={loading.list}>
-            <SelectTrigger><SelectValue placeholder={loading.list ? "Cargando..." : "Elige una noticia..."} /></SelectTrigger>
+            {/* ✅ Se añade la clase 'truncate' para el texto seleccionado */}
+            <SelectTrigger className="truncate">
+              <SelectValue placeholder={loading.list ? "Cargando..." : "Elige una noticia..."} />
+            </SelectTrigger>
             <SelectContent>
-              {newsList.map(item => <SelectItem key={item.id} value={item.id.toString()}>{item.title}</SelectItem>)}
+              {newsList.map(item => (
+                // ✅ Se añade la clase 'truncate' a cada opción del menú
+                <SelectItem key={item.id} value={item.id.toString()} className="truncate">
+                  {item.title}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           {loading.details && <p className="text-sm text-muted-foreground">Cargando detalles...</p>}
@@ -157,7 +164,7 @@ export function ActualizarNoticiaPanel() {
               <Input placeholder="Título" value={formData.title || ''} onChange={e => handleInputChange('title', e.target.value)} required />
               <Textarea placeholder="Cuerpo..." value={formData.body || ''} onChange={e => handleInputChange('body', e.target.value)} rows={4} required />
               <div className="flex items-center space-x-2 pt-2">
-                <Switch id="update_is_published" checked={formData.is_published} onCheckedChange={checked => handleInputChange('is_published', checked)} />
+                <Switch id="update_is_published" checked={!!formData.is_published} onCheckedChange={checked => handleInputChange('is_published', checked)} />
                 <Label htmlFor="update_is_published">Publicado</Label>
               </div>
               <div className="space-y-2">

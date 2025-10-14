@@ -147,7 +147,7 @@ export default function QuienesSomosPage() {
           </p>
           <div className="mt-8">
             <Button asChild size="lg">
-              <Link href="/registro">Empieza ahora, es gratis</Link>
+              <Link href="#">Empieza ahora, es gratis</Link>
             </Button>
           </div>
         </div>
