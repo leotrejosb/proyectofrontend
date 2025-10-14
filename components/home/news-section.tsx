@@ -37,6 +37,9 @@ interface Paginated<T> {
   results: T[];
 }
 
+type ApiResponse = Paginated<ApiPost> | ApiPost[];
+
+// ---- Utils ----
 function mapApiPostToNews(item: ApiPost): NewsArticle {
   return {
     id: item.id,
@@ -48,6 +51,21 @@ function mapApiPostToNews(item: ApiPost): NewsArticle {
     readTime: item.readTime || '3 min',
     slug: item.slug,
   };
+}
+
+function isAbortError(err: unknown): boolean {
+  // Compatible en navegador y ambientes donde DOMException no esté presente
+  if (err && typeof err === 'object' && 'name' in (err as Record<string, unknown>)) {
+    const name = (err as { name?: unknown }).name;
+    return typeof name === 'string' && name === 'AbortError';
+  }
+  return false;
+}
+
+function unwrapApi(data: ApiResponse): ApiPost[] {
+  return Array.isArray((data as Paginated<ApiPost>)?.results)
+    ? (data as Paginated<ApiPost>).results
+    : (data as ApiPost[]);
 }
 
 export function NewsSection() {
@@ -62,17 +80,26 @@ export function NewsSection() {
       try {
         setLoading(true);
         setError(null);
-        const base = process.env.NEXT_PUBLIC_API_BASE_URL!;
+
+        const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!base) {
+          throw new Error('La URL base de la API no está configurada (NEXT_PUBLIC_API_BASE_URL).');
+        }
+
         const url = `${base}/posts/?ordering=-publish_at`;
-        const res = await fetch(url, { signal: ctrl.signal, headers: { accept: 'application/json' } });
+        const res = await fetch(url, {
+          signal: ctrl.signal,
+          headers: { accept: 'application/json' },
+        });
+
         if (!res.ok) throw new Error(`Error ${res.status}`);
-        const data = (await res.json()) as Paginated<ApiPost> | ApiPost[];
-        const raw = Array.isArray((data as Paginated<ApiPost>)?.results)
-          ? (data as Paginated<ApiPost>).results
-          : (data as ApiPost[]);
+
+        const data = (await res.json()) as ApiResponse;
+        const raw = unwrapApi(data);
         setPosts(raw.map(mapApiPostToNews));
-      } catch (e: any) {
-        if (e.name !== 'AbortError') setError('No se pudieron cargar las noticias.');
+      } catch (e: unknown) {
+        if (isAbortError(e)) return; // se canceló la petición, no hacer nada
+        setError('No se pudieron cargar las noticias.');
       } finally {
         setLoading(false);
       }
