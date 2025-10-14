@@ -1,118 +1,180 @@
+// app/noticias/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, Clock, ArrowLeft, Share2 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import { Separator } from '../../../components/ui/separator';
 
+// ---------------- Tipos de la API ----------------
+interface ApiPost {
+  id: string | number;
+  title: string;
+  excerpt?: string | null;
+  content?: string | null; // algunos backends usan "content"
+  body?: string | null;    // tu backend usa "body"
+  image?: string | null;
+  category?: string | null;
+  date?: string | null;        // ISO (ej: "2025-10-12T18:05:00-05:00")
+  publish_at?: string | null;  // Soporte alterno
+  readTime?: string | null;
+  slug: string;
+  author?: string | null;
+}
+
+interface Paginated<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+type ApiResponse = Paginated<ApiPost> | ApiPost[];
+
+// ---------------- Tipo del modelo limpio ----------------
 interface NewsArticle {
-  id: string;
+  id: string | number;
   title: string;
   excerpt: string;
-  content: string;
+  content: string; // unificamos aquí el "body/content" de la API
   image: string;
   category: string;
-  date: string;
+  date: string; // ISO
   readTime: string;
   slug: string;
   author: string;
 }
 
-// ✅ INTERFAZ AGREGADA PARA NEXT.JS 15
+// ✅ Tipado para App Router (Next 15) usando `params` como Promise
 interface NoticiaPageProps {
   params: Promise<{
     slug: string;
   }>;
 }
 
-export function generateStaticParams() {
-  return [
-    { slug: 'gran-triatlon-nacional-2025' },
-    { slug: 'nuevos-records-maraton-montana' },
-  ];
+// ---------------- Utils ----------------
+function unwrapApi(data: ApiResponse): ApiPost[] {
+  return Array.isArray((data as Paginated<ApiPost>)?.results)
+    ? (data as Paginated<ApiPost>).results
+    : (data as ApiPost[]);
 }
 
-const articles: NewsArticle[] = [
-  {
-    id: '1',
-    title: 'Gran Triatlón Nacional 2025: Inscripciones Abiertas',
-    excerpt: 'El evento más esperado del año abre sus puertas. Participa en natación, ciclismo y carrera en un recorrido desafiante.',
-    content: `El Gran Triatlón Nacional 2025 está oficialmente abierto para inscripciones. Este es el evento más importante del calendario deportivo nacional, reuniendo a los mejores atletas de resistencia del país.
+function hasHTML(text: string): boolean {
+  // detección básica de HTML para decidir el render
+  return /<\/?[a-z][\s\S]*>/i.test(text);
+}
 
-La competencia incluirá tres disciplinas: natación de 1.5 km en aguas abiertas, ciclismo de 40 km en ruta montañosa, y carrera a pie de 10 km. El recorrido ha sido diseñado para poner a prueba la resistencia, técnica y determinación de cada participante.
+function mapApiPostToNews(item: ApiPost): NewsArticle {
+  const date = item.date ?? item.publish_at ?? new Date().toISOString();
+  // Unificamos el contenido priorizando "content" y luego "body"
+  const unifiedContent = (item.content ?? item.body ?? '').trim();
 
-**Fechas importantes:**
-- Inicio de inscripciones: 1 de octubre de 2025
-- Cierre de inscripciones: 1 de noviembre de 2025
-- Fecha del evento: 15 de noviembre de 2025
+  return {
+    id: item.id,
+    title: item.title,
+    excerpt: item.excerpt ?? '',
+    content: unifiedContent,
+    image: item.image || 'https://placehold.co/1600x900?text=Noticia',
+    category: item.category || 'Noticias',
+    date,
+    readTime: item.readTime || '1 min',
+    slug: item.slug,
+    author: item.author || 'Equipo Editorial',
+  };
+}
 
-**Categorías:**
-- Elite (18-39 años)
-- Master (40+ años)
-- Por equipos
+// ---------------- Fetchers ----------------
+async function getArticle(slug: string): Promise<NewsArticle | null> {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!base) {
+    console.error('Falta NEXT_PUBLIC_API_BASE_URL');
+    return null;
+  }
 
-Los primeros 100 inscritos recibirán un kit de bienvenida especial con equipamiento técnico patrocinado por nuestros aliados. No pierdas esta oportunidad de demostrar tu capacidad y formar parte de la historia deportiva nacional.
+  try {
+    // Soportamos backend paginado y no paginado
+    const res = await fetch(`${base}/posts/?slug=${encodeURIComponent(slug)}`, {
+      cache: 'no-store',
+      headers: { accept: 'application/json' },
+    });
+    if (!res.ok) return null;
 
-Para más información sobre el reglamento, costos de inscripción y detalles del recorrido, visita nuestra sección de competencias o contacta directamente con nuestro equipo organizador.`,
-    image: 'https://images.pexels.com/photos/863988/pexels-photo-863988.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    category: 'Competencias',
-    date: '2025-10-01',
-    readTime: '3 min',
-    slug: 'gran-triatlon-nacional-2025',
-    author: 'Equipo XXXXXX',
-  },
-  {
-    id: '2',
-    title: 'Nuevos Récords Alcanzados en la Maratón de Montaña',
-    excerpt: 'Conoce a los atletas que rompieron récords históricos en la última competencia de trail running.',
-    content: `La reciente edición de la Maratón de Montaña Los Picos fue testigo de momentos históricos, con múltiples récords rotos en diferentes categorías.
+    const data = (await res.json()) as ApiResponse;
+    const raw = unwrapApi(data);
+    const found = raw.find((p) => p.slug === slug);
+    if (!found) return null;
 
-María González estableció un nuevo récord femenino al completar el recorrido de 42 km en 3 horas y 28 minutos, superando el récord anterior por más de 5 minutos. En la categoría masculina, Carlos Ramírez terminó en 2 horas y 52 minutos, también un nuevo récord nacional.
+    return mapApiPostToNews(found);
+  } catch (err: unknown) {
+    console.error('Error fetching article:', err);
+    return null;
+  }
+}
 
-**Condiciones del evento:**
-El clima fue desafiante, con temperaturas oscilando entre 8°C y 15°C, y una humedad del 65%. El recorrido incluyó un desnivel acumulado de 1,850 metros, atravesando bosques densos y zonas rocosas que pusieron a prueba a todos los participantes.
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!base) return [];
 
-**Destacados:**
-- 234 atletas completaron la competencia
-- 12 nuevos récords personales registrados
-- 100% de satisfacción de los participantes según encuesta post-evento
+  try {
+    const res = await fetch(`${base}/posts/?ordering=-publish_at`, {
+      cache: 'no-store',
+      headers: { accept: 'application/json' },
+    });
+    if (!res.ok) return [];
 
-Felicitamos a todos los competidores por su esfuerzo y dedicación. Estos resultados demuestran el alto nivel de preparación de nuestra comunidad deportiva.`,
-    image: 'https://images.pexels.com/photos/2803160/pexels-photo-2803160.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    category: 'Resultados',
-    date: '2025-09-28',
-    readTime: '5 min',
-    slug: 'nuevos-records-maraton-montana',
-    author: 'Equipo XXXXXX',
-  },
-];
+    const data = (await res.json()) as ApiResponse;
+    const raw = unwrapApi(data);
 
-// ✅ COMPONENTE CORREGIDO CON ASYNC Y AWAIT
+    return raw
+      .filter((p) => typeof p.slug === 'string' && p.slug.length > 0)
+      .map((p) => ({ slug: p.slug }));
+  } catch (err: unknown) {
+    console.error('Error generating static params (noticias):', err);
+    return [];
+  }
+}
+
+// ---------------- Página ----------------
 export default async function NoticiaDetalladaPage({ params }: NoticiaPageProps) {
-  const { slug } = await params; // ✅ Await params para Next.js 15
-  const article = articles.find((a) => a.slug === slug);
+  const { slug } = await params; // Next 15: params es Promise
+  const article = await getArticle(slug);
 
   if (!article) {
     notFound();
   }
 
+  const showHTML = article.content && hasHTML(article.content);
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Hero */}
       <div className="relative h-[400px] w-full overflow-hidden border-b border-border">
-        <img src={article.image} alt={article.title} className="h-full w-full object-cover" />
+        <Image
+          src={article.image}
+          alt={article.title}
+          fill
+          priority
+          sizes="100vw"
+          quality={85}
+          className="object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
       </div>
 
       <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+        {/* Back & Header */}
         <div className="mb-8">
-          <Button asChild variant="ghost" size="sm" className="mb-6">
+            <Button asChild variant="ghost" size="sm" className="mb-6">
             <Link href="/noticias">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Volver a noticias
             </Link>
-          </Button>
+            </Button>
 
-          <Badge className="mb-4">{article.category}</Badge>
+            <div className="mb-4">
+            <Badge>{article.category}</Badge>
+            </div>
 
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             {article.title}
@@ -131,22 +193,35 @@ export default async function NoticiaDetalladaPage({ params }: NoticiaPageProps)
               <Clock className="h-4 w-4" />
               {article.readTime} de lectura
             </span>
-            <span>Por {article.author}</span>
+            {article.author && <span>Por {article.author}</span>}
           </div>
         </div>
 
         <Separator className="my-8" />
 
+        {/* Contenido ordenado */}
         <div className="prose prose-invert max-w-none">
-          <p className="text-xl leading-relaxed text-foreground/90">{article.excerpt}</p>
+          {/* Extracto destacado si llega desde la API */}
+          {article.excerpt && (
+            <p className="text-xl leading-relaxed text-foreground/90">{article.excerpt}</p>
+          )}
 
-          <div className="mt-8 whitespace-pre-line text-base leading-relaxed text-foreground/80">
-            {article.content}
+          {/* Contenido: si hay HTML lo renderizamos como tal; si no, texto con saltos de línea */}
+          <div className="mt-8 text-base leading-relaxed text-foreground/80">
+            {showHTML ? (
+              <div
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
+            ) : (
+              <div className="whitespace-pre-line">{article.content || article.excerpt}</div>
+            )}
           </div>
         </div>
 
         <Separator className="my-12" />
 
+        {/* Footer Nav */}
         <div className="flex items-center justify-between">
           <Button asChild variant="outline">
             <Link href="/noticias">
